@@ -11,6 +11,7 @@ package com.mycompany.projet_doodle.jump_space_marine;
 public class Projet_DoodleJump_Space_Marine {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        FenetrePrincipale f = new FenetrePrincipale();
+        f.setVisible(true);
     }
 }

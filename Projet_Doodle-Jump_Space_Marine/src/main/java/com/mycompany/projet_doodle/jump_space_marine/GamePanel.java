@@ -4,17 +4,40 @@
  */
 package com.mycompany.projet_doodle.jump_space_marine;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+
 /**
  *
  * @author Jacob
  */
-public class Plateforme extends javax.swing.JPanel {
+public class GamePanel extends javax.swing.JPanel {
+
+    private File fichierPersonnage = new File("src/main/java/images/Space_marine.png");
+    private BufferedImage imagePersonnage;
 
     /**
-     * Creates new form Plateforme
+     * Creates new form GamePanel
      */
-    public Plateforme() {
+    public GamePanel() {
         initComponents();
+        try {
+            imagePersonnage = ImageIO.read(fichierPersonnage);
+        } catch (IOException ex) {
+            System.out.println("fichier introuvable");
+        }
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
+      
+        
+        g.drawImage(imagePersonnage, 50, 78, null);
     }
 
     /**
