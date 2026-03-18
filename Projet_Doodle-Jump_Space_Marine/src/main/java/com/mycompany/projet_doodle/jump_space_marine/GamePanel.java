@@ -22,12 +22,21 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
 
     private File fichierPersonnage = new File("src/main/java/images/Space_marine.png");
     private BufferedImage imagePersonnage;
+    private File fichierPlatVerte = new File("src/main/java/images/plateforme_verte.png");
+    private BufferedImage imagePlatVerte;
+    private File fichierPlatBleue = new File("src/main/java/images/plateforme_bleue.png");
+    private BufferedImage imagePlatBleue;
+    private File fichierPlatRouge = new File("src/main/java/images/plateforme_rouge.png");
+    private BufferedImage imagePlatRouge;
+
+    private File fichierFond = new File("src/main/java/images/Fond.png");
+    private BufferedImage imageFond;
 
     private List<Plateforme> plateformes;
     private Random random;
 
-    private final int LARGEUR_PLATEFORME = 60;
-    private final int HAUTEUR_PLATEFORME = 15;
+    private final int LARGEUR_PLATEFORME = 87;
+    private final int HAUTEUR_PLATEFORME = 23;
     private final int NOMBRE_PLATEFORMES = 7;
     private final int ECART_Y = 120; // L'écart parfait, fixe et définitif !
 
@@ -36,7 +45,7 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
     private double vitesseY = -10.5; // Il saute automatiquement !
 
     private final double GRAVITE = 0.4;
-    private final double FORCE_SAUT = -10.5;
+    private final double FORCE_SAUT = -12.5;
     private final int LARGEUR_PERSO = 40;
     private final int HAUTEUR_PERSO = 60;
 
@@ -65,8 +74,14 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
         initComponents();
         try {
             imagePersonnage = ImageIO.read(fichierPersonnage);
+            imagePlatVerte = ImageIO.read(fichierPlatVerte);
+            imagePlatBleue = ImageIO.read(fichierPlatBleue);
+            imagePlatRouge = ImageIO.read(fichierPlatRouge);
+
+            imageFond = ImageIO.read(fichierFond);
+
         } catch (IOException ex) {
-            System.out.println("fichier introuvable");
+            System.out.println("Un ou plusieurs fichiers images sont introuvables");
         }
 
         plateformes = new ArrayList<>();
@@ -211,45 +226,59 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        if (imageFond != null) {
+            // getWidth() et getHeight() permettent à l'image de prendre 
+            // automatiquement toute la taille de ta fenêtre (500x900)
+            g.drawImage(imageFond, 0, 0, getWidth(), getHeight(), null);
+        }
+
         for (Plateforme p : plateformes) {
             if (p.estDetruite) {
                 continue;
             }
 
-            if (p.type == 0) {
-                g.setColor(Color.GREEN);
-            } else if (p.type == 1) {
-                g.setColor(Color.BLUE);
-            } else if (p.type == 2) {
-                g.setColor(Color.RED);
+            if (p.type == 0 && imagePlatVerte != null) {
+                g.drawImage(imagePlatVerte, p.x, p.y, p.width, p.height, null);
+            } else if (p.type == 1 && imagePlatBleue != null) {
+                g.drawImage(imagePlatBleue, p.x, p.y, p.width, p.height, null);
+            } else if (p.type == 2 && imagePlatRouge != null) {
+                g.drawImage(imagePlatRouge, p.x, p.y, p.width, p.height, null);
+            } else {
+                // Sécurité : si tu oublies de mettre les images dans le dossier, 
+                // le jeu dessinera quand même les couleurs de base pour ne pas planter !
+                if (p.type == 0) {
+                    g.setColor(Color.GREEN);
+                } else if (p.type == 1) {
+                    g.setColor(Color.BLUE);
+                } else if (p.type == 2) {
+                    g.setColor(Color.RED);
+                }
+                g.fillRect(p.x, p.y, p.width, p.height);
             }
 
-            g.fillRect(p.x, p.y, p.width, p.height);
-            g.setColor(Color.BLACK);
-            g.drawRect(p.x, p.y, p.width, p.height);
-        }
-
-        if (imagePersonnage != null) {
-            g.drawImage(imagePersonnage, persoX, (int) persoY, null);
-        }
-
-        g.setColor(Color.BLACK);
-        g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 16));
-        g.drawString("Score : " + score, 10, 25);
-
-        if (estGameOver) {
-            g.setColor(Color.RED);
-            g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 50));
-            g.drawString("GAME OVER", getWidth() / 2 - 160, getHeight() / 2);
+            if (imagePersonnage != null) {
+                g.drawImage(imagePersonnage, persoX, (int) persoY, null);
+            }
 
             g.setColor(Color.BLACK);
-            g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 18));
-            g.drawString("Appuyez sur ESPACE ou ENTRÉE pour rejouer", getWidth() / 2 - 200, getHeight() / 2 + 50);
+            g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 16));
+            g.drawString("Score : " + score, 10, 25);
+
+            if (estGameOver) {
+                g.setColor(Color.RED);
+                g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 50));
+                g.drawString("GAME OVER", getWidth() / 2 - 160, getHeight() / 2);
+
+                g.setColor(Color.BLACK);
+                g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 18));
+                g.drawString("Appuyez sur ESPACE ou ENTRÉE pour rejouer", getWidth() / 2 - 200, getHeight() / 2 + 50);
+            }
         }
     }
 
     @Override
-    public void keyPressed(KeyEvent e) {
+    public void keyPressed(KeyEvent e
+    ) {
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             toucheGauche = true;
         }
@@ -263,7 +292,8 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
+    public void keyReleased(KeyEvent e
+    ) {
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             toucheGauche = false;
         }
@@ -273,7 +303,8 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {
+    public void keyTyped(KeyEvent e
+    ) {
     }
 
     /**
