@@ -15,12 +15,14 @@ import java.util.List;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.Timer;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 /**
  *
  * @author Jacob
  */
-public class GamePanel extends javax.swing.JPanel {
+public class GamePanel extends javax.swing.JPanel implements KeyListener {
 
     private File fichierPersonnage = new File("src/main/java/images/Space_marine.png");
     private BufferedImage imagePersonnage;
@@ -43,6 +45,11 @@ public class GamePanel extends javax.swing.JPanel {
     private final int LARGEUR_PERSO = 40;
     private final int HAUTEUR_PERSO = 60;
 
+    // --- NOUVELLES VARIABLES : MOUVEMENT HORIZONTAL ---
+    private boolean toucheGauche = false;
+    private boolean toucheDroite = false;
+    private final int VITESSE_X = 5; // Vitesse de déplacement latéral
+
     private Timer timer; // Le chronomètre qui fait tourner le jeu
 
     /**
@@ -55,10 +62,15 @@ public class GamePanel extends javax.swing.JPanel {
         } catch (IOException ex) {
             System.out.println("fichier introuvable");
         }
+
         // Initialisation des plateformes
         plateformes = new ArrayList<>();
         random = new Random();
         genererPlateformes();
+
+        // --- NOUVEAU : CONFIGURATION DU CLAVIER ---
+        this.setFocusable(true); // Indispensable pour que le panel reçoive les touches
+        this.addKeyListener(this); // On dit au panel d'écouter ses propres événements clavier
 
         // --- NOUVEAU : INITIALISATION DE LA BOUCLE DE JEU ---
         // Exécute le code toutes les 16 millisecondes (~60 FPS)
@@ -89,6 +101,23 @@ public class GamePanel extends javax.swing.JPanel {
     // --- NOUVELLE MÉTHODE : LA LOGIQUE DE PHYSIQUE ---
 
     private void mettreAJour() {
+
+        // --- NOUVEAU : LOGIQUE DE DÉPLACEMENT HORIZONTAL ---
+        if (toucheGauche) {
+            persoX -= VITESSE_X;
+        }
+        if (toucheDroite) {
+            persoX += VITESSE_X;
+        }
+
+        // --- NOUVEAU : EFFET DE BORD D'ÉCRAN (Wrap-around) ---
+        // Si le personnage sort par la gauche, il réapparaît à droite (et inversement)
+        if (persoX < -LARGEUR_PERSO) {
+            persoX = 400; // 400 est la largeur de votre fenêtre
+        } else if (persoX > 400) {
+            persoX = -LARGEUR_PERSO;
+        }
+
         // 1. Appliquer la gravité à la vitesse du personnage
         vitesseY += GRAVITE;
 
@@ -134,6 +163,35 @@ public class GamePanel extends javax.swing.JPanel {
         if (imagePersonnage != null) {
             g.drawImage(imagePersonnage, persoX, (int) persoY, null);
         }
+        
+    }
+    // --- NOUVELLES MÉTHODES DE L'INTERFACE KEYLISTENER ---
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        // Quand on appuie sur une touche
+        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+            toucheGauche = true;
+        }
+        if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+            toucheDroite = true;
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        // Quand on relâche la touche
+        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+            toucheGauche = false;
+        }
+        if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+            toucheDroite = false;
+        }
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        // Non utilisé ici, mais obligatoire car fait partie de l'interface KeyListener
     }
 
     /**

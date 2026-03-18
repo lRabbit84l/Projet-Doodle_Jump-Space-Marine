@@ -17,6 +17,11 @@ public class FenetrePrincipale extends javax.swing.JFrame {
      */
     public FenetrePrincipale() {
         initComponents();
+        // Définit la taille de la fenêtre (Largeur, Hauteur) en pixels
+        setSize(500, 900); 
+        
+        // Optionnel : Centre la fenêtre au milieu de l'écran au lancement
+        setLocationRelativeTo(null);
     }
 
     /**
