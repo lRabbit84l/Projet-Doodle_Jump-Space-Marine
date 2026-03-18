@@ -18,43 +18,49 @@ import javax.swing.Timer;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-/**
- *
- * @author Jacob
- */
 public class GamePanel extends javax.swing.JPanel implements KeyListener {
 
     private File fichierPersonnage = new File("src/main/java/images/Space_marine.png");
     private BufferedImage imagePersonnage;
 
-    // Nouvelles variables pour les plateformes
-    private List<Rectangle> plateformes;
+    private List<Plateforme> plateformes;
     private Random random;
+
     private final int LARGEUR_PLATEFORME = 60;
     private final int HAUTEUR_PLATEFORME = 15;
-    private final int NOMBRE_PLATEFORMES = 7; // Ajustez ce nombre selon la difficulté
+    private final int NOMBRE_PLATEFORMES = 7;
+    private final int ECART_Y = 120; // L'écart parfait, fixe et définitif !
 
-    // --- NOUVELLES VARIABLES : PHYSIQUE ET JOUEUR ---
-    private int persoX = 170; // Position de départ au centre-gauche
-    private double persoY = 50;  // Position de départ en hauteur
-    private double vitesseY = 0; // Vitesse verticale initiale
-    private final double GRAVITE = 0.4; // Force de la gravité (attire vers le bas)
-    private final double FORCE_SAUT = -9.5; // Force du saut (négative car l'axe Y monte vers le bas en Java)
+    private int persoX = 220; // Au centre (500/2 environ)
+    private double persoY = 600; // En bas de l'écran
+    private double vitesseY = -10.5; // Il saute automatiquement !
 
-    // Taille approximative de votre image pour calculer les collisions (à ajuster selon votre image réelle)
+    private final double GRAVITE = 0.4;
+    private final double FORCE_SAUT = -10.5;
     private final int LARGEUR_PERSO = 40;
     private final int HAUTEUR_PERSO = 60;
 
-    // --- NOUVELLES VARIABLES : MOUVEMENT HORIZONTAL ---
     private boolean toucheGauche = false;
     private boolean toucheDroite = false;
-    private final int VITESSE_X = 5; // Vitesse de déplacement latéral
+    private final int VITESSE_X = 6;
 
-    private Timer timer; // Le chronomètre qui fait tourner le jeu
+    private int score = 0;
+    private boolean estGameOver = false;
+    private Timer timer;
 
-    /**
-     * Creates new form GamePanel
-     */
+    // --- NOTRE CLASSE PLATEFORME ---
+    class Plateforme extends Rectangle {
+
+        int type; // 0=Verte, 1=Bleue, 2=Rouge
+        int directionX = 2;
+        boolean estDetruite = false;
+
+        public Plateforme(int x, int y, int width, int height, int type) {
+            super(x, y, width, height);
+            this.type = type;
+        }
+    }
+
     public GamePanel() {
         initComponents();
         try {
@@ -63,46 +69,54 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
             System.out.println("fichier introuvable");
         }
 
-        // Initialisation des plateformes
         plateformes = new ArrayList<>();
         random = new Random();
         genererPlateformes();
 
-        // --- NOUVEAU : CONFIGURATION DU CLAVIER ---
-        this.setFocusable(true); // Indispensable pour que le panel reçoive les touches
-        this.addKeyListener(this); // On dit au panel d'écouter ses propres événements clavier
+        this.setFocusable(true);
+        this.addKeyListener(this);
 
-        // --- NOUVEAU : INITIALISATION DE LA BOUCLE DE JEU ---
-        // Exécute le code toutes les 16 millisecondes (~60 FPS)
         timer = new Timer(16, e -> {
-            mettreAJour(); // Calcule la nouvelle position
-            repaint();     // Redessine l'écran
+            mettreAJour();
+            repaint();
         });
-        timer.start(); // Lance le jeu !
-    }// Méthode pour créer des plateformes avec des positions X et Y aléatoires
+        timer.start();
+    }
+
+    private void recommencerJeu() {
+        persoX = 220;
+        persoY = 600;
+        vitesseY = FORCE_SAUT; // Saute direct !
+        score = 0;
+        estGameOver = false;
+        toucheGauche = false;
+        toucheDroite = false;
+        genererPlateformes();
+    }
 
     private void genererPlateformes() {
-        // La taille par défaut de votre panel est 400x300 selon NetBeans
-        int largeurPanel = 400;
-        int hauteurPanel = 300;
+        plateformes.clear();
 
-        // On place une plateforme de départ juste sous le joueur pour qu'il ne tombe pas dans le vide au lancement
-        plateformes.add(new Rectangle(150, 250, LARGEUR_PLATEFORME, HAUTEUR_PLATEFORME));
+        // 1. Plateforme de départ sous les pieds
+        plateformes.add(new Plateforme(200, 650, LARGEUR_PLATEFORME, HAUTEUR_PLATEFORME, 0));
 
-        for (int i = 0; i < NOMBRE_PLATEFORMES; i++) {
-            // Génère un X aléatoire pour que la plateforme reste dans l'écran
-            int x = random.nextInt(largeurPanel - LARGEUR_PLATEFORME);
-            // Génère un Y aléatoire réparti sur la hauteur de l'écran
-            int y = random.nextInt(hauteurPanel);
+        // 2. On empile les autres avec l'écart fixe de 120
+        for (int i = 1; i < NOMBRE_PLATEFORMES; i++) {
+            int x = random.nextInt(400);
+            int y = 650 - (i * ECART_Y);
 
-            plateformes.add(new Rectangle(x, y, LARGEUR_PLATEFORME, HAUTEUR_PLATEFORME));
+            int chance = random.nextInt(100);
+            int type = (chance > 90) ? 2 : ((chance > 70) ? 1 : 0);
+
+            plateformes.add(new Plateforme(x, y, LARGEUR_PLATEFORME, HAUTEUR_PLATEFORME, type));
         }
     }
-    // --- NOUVELLE MÉTHODE : LA LOGIQUE DE PHYSIQUE ---
 
     private void mettreAJour() {
+        if (estGameOver) {
+            return;
+        }
 
-        // --- NOUVEAU : LOGIQUE DE DÉPLACEMENT HORIZONTAL ---
         if (toucheGauche) {
             persoX -= VITESSE_X;
         }
@@ -110,77 +124,146 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
             persoX += VITESSE_X;
         }
 
-        // --- NOUVEAU : EFFET DE BORD D'ÉCRAN (Wrap-around) ---
-        // Si le personnage sort par la gauche, il réapparaît à droite (et inversement)
-        if (persoX < -LARGEUR_PERSO) {
-            persoX = 400; // 400 est la largeur de votre fenêtre
-        } else if (persoX > 400) {
-            persoX = -LARGEUR_PERSO;
-        }
+        // La ligne médiane fixe (la moitié de 900)
+        int ligneMediane = 450;
 
-        // 1. Appliquer la gravité à la vitesse du personnage
-        vitesseY += GRAVITE;
+        if (persoY < ligneMediane) {
+            double decalage = ligneMediane - persoY;
+            persoY = ligneMediane;
+            score += decalage;
 
-        // 2. Modifier la position Y du personnage en fonction de sa vitesse
-        persoY += vitesseY;
+            // On descend les plateformes
+            for (Plateforme p : plateformes) {
+                p.y += decalage;
+            }
 
-        // 3. Créer une "boîte de collision" virtuelle autour du personnage
-        Rectangle rectPerso = new Rectangle(persoX, (int) persoY, LARGEUR_PERSO, HAUTEUR_PERSO);
+            // Recyclage infaillible
+            for (Plateforme p : plateformes) {
+                if (p.y > 900) {
+                    // Trouve la plateforme la plus haute
+                    int plusHautY = plateformes.get(0).y;
+                    for (Plateforme plt : plateformes) {
+                        if (plt.y < plusHautY) {
+                            plusHautY = plt.y;
+                        }
+                    }
 
-        // 4. Gérer les collisions avec les plateformes
-        // On ne rebondit QUE si le personnage est en train de tomber (vitesseY > 0)
-        if (vitesseY > 0) {
-            for (Rectangle plateforme : plateformes) {
-                // Si la boîte du joueur croise la boîte d'une plateforme
-                if (rectPerso.intersects(plateforme)) {
-                    // On modifie la vitesse pour simuler un saut vers le haut !
-                    vitesseY = FORCE_SAUT;
-                    break; // Un seul rebond suffit par image
+                    // Place la nouvelle EXACTEMENT 120 pixels au-dessus
+                    p.y = plusHautY - ECART_Y;
+                    p.x = random.nextInt(400);
+
+                    int chance = random.nextInt(100);
+                    p.type = (chance > 90) ? 2 : ((chance > 70) ? 1 : 0);
+                    p.estDetruite = false;
                 }
             }
         }
 
-        // Sécurité temporaire : Si le joueur tombe tout en bas de la fenêtre, on le fait rebondir
-        if (persoY > 300) {
-            vitesseY = FORCE_SAUT;
+        // Wrap-around de l'écran
+        if (persoX < -LARGEUR_PERSO) {
+            persoX = 500;
+        } else if (persoX > 500) {
+            persoX = -LARGEUR_PERSO;
+        }
+
+        vitesseY += GRAVITE;
+        persoY += vitesseY;
+
+        // Fait bouger les plateformes bleues tout le temps
+        for (Plateforme p : plateformes) {
+            if (p.type == 1) {
+                p.x += p.directionX;
+                if (p.x <= 0 || p.x + p.width >= 500) {
+                    p.directionX *= -1;
+                }
+            }
+        }
+
+        // Collisions
+        Rectangle rectPerso = new Rectangle(persoX, (int) persoY, LARGEUR_PERSO, HAUTEUR_PERSO);
+
+        // On ne vérifie les collisions que si le personnage tombe (vitesse positive vers le bas)
+        if (vitesseY > 0) {
+            for (Plateforme p : plateformes) {
+                // Si on touche une plateforme qui n'est pas détruite
+                if (!p.estDetruite && rectPerso.intersects(p)) {
+
+                    // 1. On applique le rebond (on saute !)
+                    vitesseY = FORCE_SAUT;
+
+                    // 2. Si c'est une plateforme rouge, on la détruit
+                    if (p.type == 2) {
+                        p.estDetruite = true; // Pouf !
+                    }
+
+                    // 3. On a fait notre rebond, on arrête de vérifier les autres plateformes
+                    break;
+                }
+            }
+        }
+
+        if (persoY > 900) {
+            estGameOver = true;
         }
     }
 
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
+        super.paintComponent(g);
 
-        // Dessiner les plateformes
-        g.setColor(Color.GREEN);
-        for (Rectangle plateforme : plateformes) {
-            g.fillRect(plateforme.x, plateforme.y, plateforme.width, plateforme.height);
+        for (Plateforme p : plateformes) {
+            if (p.estDetruite) {
+                continue;
+            }
+
+            if (p.type == 0) {
+                g.setColor(Color.GREEN);
+            } else if (p.type == 1) {
+                g.setColor(Color.BLUE);
+            } else if (p.type == 2) {
+                g.setColor(Color.RED);
+            }
+
+            g.fillRect(p.x, p.y, p.width, p.height);
             g.setColor(Color.BLACK);
-            g.drawRect(plateforme.x, plateforme.y, plateforme.width, plateforme.height);
-            g.setColor(Color.GREEN);
+            g.drawRect(p.x, p.y, p.width, p.height);
         }
 
-        // Dessiner le Space Marine avec ses nouvelles coordonnées dynamiques (persoX, persoY)
         if (imagePersonnage != null) {
             g.drawImage(imagePersonnage, persoX, (int) persoY, null);
         }
-        
+
+        g.setColor(Color.BLACK);
+        g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 16));
+        g.drawString("Score : " + score, 10, 25);
+
+        if (estGameOver) {
+            g.setColor(Color.RED);
+            g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 50));
+            g.drawString("GAME OVER", getWidth() / 2 - 160, getHeight() / 2);
+
+            g.setColor(Color.BLACK);
+            g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 18));
+            g.drawString("Appuyez sur ESPACE ou ENTRÉE pour rejouer", getWidth() / 2 - 200, getHeight() / 2 + 50);
+        }
     }
-    // --- NOUVELLES MÉTHODES DE L'INTERFACE KEYLISTENER ---
 
     @Override
     public void keyPressed(KeyEvent e) {
-        // Quand on appuie sur une touche
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             toucheGauche = true;
         }
         if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
             toucheDroite = true;
         }
+
+        if (estGameOver && (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_ENTER)) {
+            recommencerJeu();
+        }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        // Quand on relâche la touche
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             toucheGauche = false;
         }
@@ -191,7 +274,6 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
 
     @Override
     public void keyTyped(KeyEvent e) {
-        // Non utilisé ici, mais obligatoire car fait partie de l'interface KeyListener
     }
 
     /**
