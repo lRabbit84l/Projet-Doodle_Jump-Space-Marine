@@ -22,10 +22,13 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
 
     private File fichierPersonnage = new File("src/main/java/images/Space_marine.png");
     private BufferedImage imagePersonnage;
+
     private File fichierPlatVerte = new File("src/main/java/images/plateforme_verte.png");
     private BufferedImage imagePlatVerte;
+
     private File fichierPlatBleue = new File("src/main/java/images/plateforme_bleue.png");
     private BufferedImage imagePlatBleue;
+
     private File fichierPlatRouge = new File("src/main/java/images/plateforme_rouge.png");
     private BufferedImage imagePlatRouge;
 
@@ -56,6 +59,7 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
     private int score = 0;
     private boolean estGameOver = false;
     private Timer timer;
+    private boolean regardeAGauche = false;
 
     // --- NOTRE CLASSE PLATEFORME ---
     class Plateforme extends Rectangle {
@@ -257,21 +261,25 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
             }
 
             if (imagePersonnage != null) {
-                g.drawImage(imagePersonnage, persoX, (int) persoY, null);
-            }
-
-            g.setColor(Color.BLACK);
-            g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 16));
-            g.drawString("Score : " + score, 10, 25);
-
-            if (estGameOver) {
-                g.setColor(Color.RED);
-                g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 50));
-                g.drawString("GAME OVER", getWidth() / 2 - 160, getHeight() / 2);
+                if (regardeAGauche) {
+                    g.drawImage(imagePersonnage, persoX + LARGEUR_PERSO, (int) persoY, -LARGEUR_PERSO, HAUTEUR_PERSO, null);
+                } else {
+                    g.drawImage(imagePersonnage, persoX, (int) persoY, LARGEUR_PERSO, HAUTEUR_PERSO, null);
+                }
 
                 g.setColor(Color.BLACK);
-                g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 18));
-                g.drawString("Appuyez sur ESPACE ou ENTRÉE pour rejouer", getWidth() / 2 - 200, getHeight() / 2 + 50);
+                g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 16));
+                g.drawString("Score : " + score, 10, 25);
+
+                if (estGameOver) {
+                    g.setColor(Color.RED);
+                    g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 50));
+                    g.drawString("GAME OVER", getWidth() / 2 - 160, getHeight() / 2);
+
+                    g.setColor(Color.BLACK);
+                    g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 18));
+                    g.drawString("Appuyez sur ESPACE ou ENTRÉE pour rejouer", getWidth() / 2 - 200, getHeight() / 2 + 50);
+                }
             }
         }
     }
@@ -281,9 +289,11 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
     ) {
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             toucheGauche = true;
+            regardeAGauche = true;
         }
         if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
             toucheDroite = true;
+            regardeAGauche = false;
         }
 
         if (estGameOver && (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_ENTER)) {
