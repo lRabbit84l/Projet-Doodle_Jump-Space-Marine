@@ -267,7 +267,7 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
                     g.drawImage(imagePersonnage, persoX, (int) persoY, LARGEUR_PERSO, HAUTEUR_PERSO, null);
                 }
 
-                g.setColor(Color.BLACK);
+                g.setColor(Color.WHITE);
                 g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 16));
                 g.drawString("Score : " + score, 10, 25);
 
@@ -276,7 +276,7 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
                     g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 50));
                     g.drawString("GAME OVER", getWidth() / 2 - 160, getHeight() / 2);
 
-                    g.setColor(Color.BLACK);
+                    g.setColor(Color.WHITE);
                     g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 18));
                     g.drawString("Appuyez sur ESPACE ou ENTRÉE pour rejouer", getWidth() / 2 - 200, getHeight() / 2 + 50);
                 }
