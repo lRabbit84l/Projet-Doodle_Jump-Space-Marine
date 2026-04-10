@@ -199,7 +199,7 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
         }
 
         // Collisions
-        Rectangle rectPerso = new Rectangle(persoX, (int) persoY, LARGEUR_PERSO, HAUTEUR_PERSO);
+        Rectangle rectPerso = new Rectangle(persoX, (int) persoY+30, LARGEUR_PERSO, HAUTEUR_PERSO-30);
 
         // On ne vérifie les collisions que si le personnage tombe (vitesse positive vers le bas)
         if (vitesseY > 0) {
@@ -287,11 +287,11 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e
     ) {
-        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+        if ((e.getKeyCode() == KeyEvent.VK_LEFT)||(e.getKeyCode()==KeyEvent.VK_Q)) {
             toucheGauche = true;
             regardeAGauche = true;
         }
-        if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+        if ((e.getKeyCode() == KeyEvent.VK_RIGHT)||(e.getKeyCode()==KeyEvent.VK_D)) {
             toucheDroite = true;
             regardeAGauche = false;
         }
@@ -304,10 +304,10 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e
     ) {
-        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+        if ((e.getKeyCode() == KeyEvent.VK_LEFT)||(e.getKeyCode()==KeyEvent.VK_Q)) {
             toucheGauche = false;
         }
-        if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+        if ((e.getKeyCode() == KeyEvent.VK_RIGHT)||(e.getKeyCode()==KeyEvent.VK_D)) {
             toucheDroite = false;
         }
     }
