@@ -38,6 +38,9 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
     private File fichierSaut = new File("src/main/java/images/saut.png");
     private BufferedImage imageSaut;
 
+    private File fichierMonter = new File("src/main/java/images/monter.png");
+    private BufferedImage imageMonter;
+
     private List<Plateforme> plateformes;
     private Random random;
 
@@ -88,8 +91,8 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
             imagePlatBleue = ImageIO.read(fichierPlatBleue);
             imagePlatRouge = ImageIO.read(fichierPlatRouge);
             imageSaut = ImageIO.read(fichierSaut);
-
             imageFond = ImageIO.read(fichierFond);
+            imageMonter = ImageIO.read(fichierMonter);
 
         } catch (IOException ex) {
             System.out.println("Un ou plusieurs fichiers images sont introuvables");
@@ -286,6 +289,13 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
 
                     BufferedImage imageAAfficher = imagePersonnage;
 
+                    if (vitesseY < 0) {
+                        // Si la vitesse est négative, le personnage est en train de monter
+                        if (imageMonter != null) {
+                            imageAAfficher = imageMonter;
+                        }
+                    }
+
                     if (animationSaut > 0) {
                         if (imageSaut != null) {
                             imageAAfficher = imageSaut;
@@ -296,9 +306,9 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
                     }
 
                     if (regardeAGauche) {
-                        g.drawImage(imagePersonnage, persoX + wAffiche, yAffiche, -wAffiche, hAffiche, null);
+                        g.drawImage(imageAAfficher, persoX + wAffiche, yAffiche, -wAffiche, hAffiche, null);
                     } else {
-                        g.drawImage(imagePersonnage, persoX, yAffiche, wAffiche, hAffiche, null);
+                        g.drawImage(imageAAfficher, persoX, yAffiche, wAffiche, hAffiche, null);
                     }
                 }
 
