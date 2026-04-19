@@ -35,6 +35,9 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
     private File fichierFond = new File("src/main/java/images/Fond.png");
     private BufferedImage imageFond;
 
+    private File fichierSaut = new File("src/main/java/images/saut.png");
+    private BufferedImage imageSaut;
+
     private List<Plateforme> plateformes;
     private Random random;
 
@@ -61,6 +64,9 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
     private Timer timer;
     private boolean regardeAGauche = false;
 
+    private int animationSaut = 0; // Compteur de frames pour l'animation
+    private final int DUREE_ANIMATION = 10; // L'animation dure 10 frames
+
     // --- NOTRE CLASSE PLATEFORME ---
     class Plateforme extends Rectangle {
 
@@ -81,6 +87,7 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
             imagePlatVerte = ImageIO.read(fichierPlatVerte);
             imagePlatBleue = ImageIO.read(fichierPlatBleue);
             imagePlatRouge = ImageIO.read(fichierPlatRouge);
+            imageSaut = ImageIO.read(fichierSaut);
 
             imageFond = ImageIO.read(fichierFond);
 
@@ -199,7 +206,7 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
         }
 
         // Collisions
-        Rectangle rectPerso = new Rectangle(persoX, (int) persoY+30, LARGEUR_PERSO, HAUTEUR_PERSO-30);
+        Rectangle rectPerso = new Rectangle(persoX, (int) persoY + 30, LARGEUR_PERSO, HAUTEUR_PERSO - 30);
 
         // On ne vérifie les collisions que si le personnage tombe (vitesse positive vers le bas)
         if (vitesseY > 0) {
@@ -209,6 +216,8 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
 
                     // 1. On applique le rebond (on saute !)
                     vitesseY = FORCE_SAUT;
+
+                    animationSaut = DUREE_ANIMATION;
 
                     // 2. Si c'est une plateforme rouge, on la détruit
                     if (p.type == 2) {
@@ -224,6 +233,15 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
         if (persoY > 900) {
             estGameOver = true;
         }
+        if (persoY > 900) {
+            estGameOver = true; // [cite: 6]
+        }
+
+        // AJOUTE ÇA JUSTE AVANT LA FIN DE LA MÉTHODE :
+        if (animationSaut > 0) {
+            animationSaut--;
+        }
+
     }
 
     @Override
@@ -261,10 +279,27 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
             }
 
             if (imagePersonnage != null) {
-                if (regardeAGauche) {
-                    g.drawImage(imagePersonnage, persoX + LARGEUR_PERSO, (int) persoY, -LARGEUR_PERSO, HAUTEUR_PERSO, null);
-                } else {
-                    g.drawImage(imagePersonnage, persoX, (int) persoY, LARGEUR_PERSO, HAUTEUR_PERSO, null);
+                if (imagePersonnage != null) {
+                    int hAffiche = HAUTEUR_PERSO; // [cite: 6]
+                    int yAffiche = (int) persoY; // [cite: 6]
+                    int wAffiche = LARGEUR_PERSO; // [cite: 6]
+
+                    BufferedImage imageAAfficher = imagePersonnage;
+
+                    if (animationSaut > 0) {
+                        if (imageSaut != null) {
+                            imageAAfficher = imageSaut;
+                        }
+                        hAffiche -= 10; // On l'écrase
+                        yAffiche += 10; // On le maintient au sol
+                        wAffiche += 4;  // Il s'élargit un peu
+                    }
+
+                    if (regardeAGauche) {
+                        g.drawImage(imagePersonnage, persoX + wAffiche, yAffiche, -wAffiche, hAffiche, null);
+                    } else {
+                        g.drawImage(imagePersonnage, persoX, yAffiche, wAffiche, hAffiche, null);
+                    }
                 }
 
                 g.setColor(Color.WHITE);
@@ -287,11 +322,11 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e
     ) {
-        if ((e.getKeyCode() == KeyEvent.VK_LEFT)||(e.getKeyCode()==KeyEvent.VK_Q)) {
+        if ((e.getKeyCode() == KeyEvent.VK_LEFT) || (e.getKeyCode() == KeyEvent.VK_Q)) {
             toucheGauche = true;
             regardeAGauche = true;
         }
-        if ((e.getKeyCode() == KeyEvent.VK_RIGHT)||(e.getKeyCode()==KeyEvent.VK_D)) {
+        if ((e.getKeyCode() == KeyEvent.VK_RIGHT) || (e.getKeyCode() == KeyEvent.VK_D)) {
             toucheDroite = true;
             regardeAGauche = false;
         }
@@ -304,10 +339,10 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e
     ) {
-        if ((e.getKeyCode() == KeyEvent.VK_LEFT)||(e.getKeyCode()==KeyEvent.VK_Q)) {
+        if ((e.getKeyCode() == KeyEvent.VK_LEFT) || (e.getKeyCode() == KeyEvent.VK_Q)) {
             toucheGauche = false;
         }
-        if ((e.getKeyCode() == KeyEvent.VK_RIGHT)||(e.getKeyCode()==KeyEvent.VK_D)) {
+        if ((e.getKeyCode() == KeyEvent.VK_RIGHT) || (e.getKeyCode() == KeyEvent.VK_D)) {
             toucheDroite = false;
         }
     }
