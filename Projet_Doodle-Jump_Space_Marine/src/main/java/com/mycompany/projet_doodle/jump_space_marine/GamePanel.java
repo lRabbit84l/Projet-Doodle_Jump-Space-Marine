@@ -69,6 +69,7 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
 
     private int animationSaut = 0; // Compteur de frames pour l'animation
     private final int DUREE_ANIMATION = 10; // L'animation dure 10 frames
+    private int difficute = 1;
 
     // --- NOTRE CLASSE PLATEFORME ---
     class Plateforme extends Rectangle {
@@ -133,11 +134,16 @@ public class GamePanel extends javax.swing.JPanel implements KeyListener {
         for (int i = 1; i < NOMBRE_PLATEFORMES; i++) {
             int x = random.nextInt(400);
             int y = 650 - (i * ECART_Y);
+            if (difficute == 0) {
+                int chance = random.nextInt(100);
+                int type = (chance > 90) ? 2 : ((chance > 70) ? 1 : 0);
+                plateformes.add(new Plateforme(x, y, LARGEUR_PLATEFORME, HAUTEUR_PLATEFORME, type));
+            } else if (difficute == 1) {
+                int chance = random.nextInt(100);
+                int type = (chance > 60) ? 2 : ((chance > 40) ? 1 : 0);
+                plateformes.add(new Plateforme(x, y, LARGEUR_PLATEFORME, HAUTEUR_PLATEFORME, type));
+            }
 
-            int chance = random.nextInt(100);
-            int type = (chance > 90) ? 2 : ((chance > 70) ? 1 : 0);
-
-            plateformes.add(new Plateforme(x, y, LARGEUR_PLATEFORME, HAUTEUR_PLATEFORME, type));
         }
     }
 
