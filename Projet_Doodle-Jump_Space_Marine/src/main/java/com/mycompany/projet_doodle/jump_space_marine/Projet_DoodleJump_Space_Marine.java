@@ -10,7 +10,7 @@ package com.mycompany.projet_doodle.jump_space_marine;
 public class Projet_DoodleJump_Space_Marine {
 
     public static void main(String[] args) {
-        MenuFrame menu = new MenuFrame();
-        menu.setVisible(true);
+        FenetrePrincipale f = new FenetrePrincipale();
+        f.setVisible(true);
     }
 }
